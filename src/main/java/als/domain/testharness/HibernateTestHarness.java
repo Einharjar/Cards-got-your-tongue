@@ -1,18 +1,13 @@
-package virtualpairprogrammers.testharness;
+package als.domain.testharness;
 
 
 
 
-import java.util.Iterator;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 
-import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -21,7 +16,9 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
-import virtualpairprogrammers.domain.Dummy;
+import als.domain.Dummy;
+import als.domain.Users;
+
 
 public class HibernateTestHarness {
 
@@ -33,11 +30,12 @@ public class HibernateTestHarness {
 		SessionFactory sf = buildSessionFactory();
 		
 		Session session = sf.openSession();
-		Transaction tx = session.beginTransaction();TypedQuery<Dummy> query = session.createQuery("FROM Dummy");
+		Transaction tx = session.beginTransaction();
+		TypedQuery<Users> query = session.createQuery("FROM Users");
 		    
-		    List<Dummy> result = query.getResultList();
+		    List<Users> result = query.getResultList();
 		    System.out.println(result.size());
-		    for (Dummy dummy : result) {
+		    for (Users dummy : result) {
 		    	System.out.println(dummy);
 			    	
 			}

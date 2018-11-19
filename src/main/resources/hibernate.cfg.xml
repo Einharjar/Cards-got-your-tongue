@@ -12,6 +12,7 @@
   <property name="dialect">org.hibernate.dialect.DerbyDialect</property>
   <property name="hibernate.hbm2ddl.auto">update</property>
 
-   		<mapping class="package se.yrgo.als.domain.Users;"/>
+   		<mapping class="als.domain.Dummy"/>
+   		<mapping class="als.domain.Users"/>
     </session-factory>
 </hibernate-configuration>

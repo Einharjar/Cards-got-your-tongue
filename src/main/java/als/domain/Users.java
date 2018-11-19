@@ -1,12 +1,17 @@
-package se.yrgo.als.domain;
+package als.domain;
 import javax.persistence.*;
 
 
 @Entity
-@Table(name = "users", schema = "chat-got-your-tongue")
+@Table(name = "users")
 public class Users {
 
-    public Users(){}
+    public Users(){
+        this.userName = "Johan";
+        this.firstName = "Falk";
+        this.lastName = "Falk";
+        this.userEmail = "asdfasfas";
+        }
 
     //TODO
     //Make another constructor

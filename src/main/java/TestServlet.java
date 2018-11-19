@@ -11,8 +11,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import virtualpairprogrammers.domain.Dummy;
-import virtualpairprogrammers.testharness.HibernateTestHarness;
+import als.domain.Users;
 
 @WebServlet("/login")
 public class TestServlet extends HttpServlet {
@@ -22,13 +21,13 @@ public class TestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     	
 
-		SessionFactory sf = HibernateTestHarness.buildSessionFactory();
+		SessionFactory sf = als.domain.testharness.HibernateTestHarness.buildSessionFactory();
 		Session session = sf.openSession();
-		Transaction tx = session.beginTransaction();TypedQuery<Dummy> query = session.createQuery("FROM Dummy");
+		Transaction tx = session.beginTransaction();TypedQuery<Users> query = session.createQuery("FROM Users");
 		    
-		    List<Dummy> result = query.getResultList();
+		    List<Users> result = query.getResultList();
 		    System.out.println(result.size());
-		    for (Dummy dummy : result) {
+		    for (Users dummy : result) {
 		    	System.out.println(dummy);
 			    	
 			}

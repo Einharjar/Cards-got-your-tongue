@@ -1,4 +1,4 @@
-package se.yrgo.als.domain;
+package als.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
