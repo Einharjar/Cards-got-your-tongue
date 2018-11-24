@@ -1,6 +1,7 @@
+package holdem;
 
 
-public class Card {
+public class Card implements Comparable<Card>{
 	private int value;
 	private Suits suit;
 
@@ -22,5 +23,12 @@ public class Card {
 	@Override
 	public String toString() {
 		return this.value + " of " + this.suit;
+	}
+
+	
+	@Override
+	public int compareTo(Card o) {
+		// TODO Auto-generated method stub
+		return Integer.compare(this.getValue(), o.getValue());
 	}
 }

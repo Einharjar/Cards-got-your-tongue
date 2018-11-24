@@ -1,5 +1,6 @@
+package holdem;
 
 
-public enum Suits2 {
+public enum Suits {
 	HEARTS, SPADES, DIAMONDS, CLUBS
 }
