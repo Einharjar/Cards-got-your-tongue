@@ -22,6 +22,15 @@ public class Card implements Comparable<Card>{
 
 	@Override
 	public String toString() {
+		if(this.getValue() == 13)
+			return "King of " + this.suit;
+		else if(this.getValue() == 12)
+			return "Queen of " + this.suit;
+		else if(this.getValue() == 11)
+			return "Jack of " + this.suit;
+		else if(this.getValue() == 1)
+			return "Ace of " + this.suit;
+		else
 		return this.value + " of " + this.suit;
 	}
 

@@ -1,14 +1,12 @@
 package holdem;
-import java.lang.reflect.Array;
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Scanner;
 
-import javax.websocket.WebSocketContainer;
+import javax.websocket.Session;
 
 
 
@@ -18,11 +16,12 @@ import javax.websocket.WebSocketContainer;
  * fixa så att blinds tas emot
  * fixa så att korten dealas från dealern
  * kolla vem som vinner
- * snacka med websockets
  * 
  */
 
-public class Game {
+public class Holdem implements Runnable{
+	public String lastMessage = "";
+	public Session lastSender;
 	Scanner reader = new Scanner(System.in); 
 	Hand[] players;
 	double[] playerPayed;
@@ -31,86 +30,55 @@ public class Game {
 	Hand table;
 	Deck deck;
 	double bigBlinds= 30;
+	ArrayList<Session> playersList;
+	public Holdem() {
 
-	public Game(int playersInt) {
-		players = new Hand[playersInt];
-		playerPayed = new double[playersInt];
-		playerScore = new int[playersInt];
-		players[0] = new Hand();
-		deck = new Deck();
+
 		
-		
-		
-		
-		
-		
-		for(int i = 0; i <= playersInt; i++) {
-			if(StubMethod("Websocket[i] Open and raise or call")){
-				players[i] = new Hand();
-				StubMethod("remove blinds from player, add blinds to pot (fold, raise or call)");
-				if(StubMethod("if Bigfolds or raise")) {
-					StubMethod("set owed (or payed)");
-				}
+	}
+	public void start(ArrayList<Session> playersList) {
+		this.playersList = playersList;
+		for(Session s : playersList) {
+			try {
+				s.getBasicRemote().sendText("Welcome to Texas Holdem");
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 
-		bettingRound();
+		  Thread t1 = new Thread(this);
+		    t1.start();
+	}
 
-		deck.shuffle();
+	private void bettingRound() {
+		sendMessage("-----------------------------------");
+		for(int i = 0; i < playersList.size() ; i++) {
 		
-		//Player cards dealt
-		for (int card = 0; card < 2; card++) {
-			for (int i = 0; i < playersInt; i++) {
-				if(players[i] != null) {
-					players[i].AddCard(deck);
-					}
-			}
+		if(playersList.get(i).isOpen() ){
+			sendMessage("Round begin ", i);
+			sendMessage(players[i].toString(), i);
+			sendMessage("Table is "+table.toString(), i);
+		int option = awaitPlayer(i);
+//		players[i] = new Hand();
+		
+		if(option == 1) {
+			StubMethod("Payed ++");
 		}
-
+		else if(option == 2) {
+			players[i] = null;
+		}
+		
+		else if(option == 3) {
+		}
 		
 		
-
-
 		
-		//The Flop
-			table = new Hand();
-			for (int j = 0; j < 3; j++) {
-				table.AddCard(deck);
-			}
-
-			bettingRound();
-			
-			// The turn
-			table.AddCard(deck);	
-			
-
-
-			bettingRound();
-
-			
-			
-			// The river
-			table.AddCard(deck);
-			
-
-			bettingRound();
-
-			Showdown();
-			
-
-			System.out.println("Table = " +table);
-			System.out.println("Pot is "+getPot());
-			for (int i = 0; i < players.length; i++) {
-				if (players[i] != null) {
-					System.out.println(players[i]+" "+i);
-					
-				}
-			}
+		
+	}
+}
+		
 	}
 
-	public static void main(String[] args) {
-		new Game(2);
-	}
 	
 	private boolean StubMethod(String s) {
 		return false;
@@ -133,69 +101,23 @@ public class Game {
 		}
 		return amount;
 	}
-	private int getPlayerResponse(int player){
+	
+	public boolean verifyPlayerInput(String m, int player) {
 
-if(getOwed(player) <= 0) 
-	System.out.println("(2):Fold (3):Raise ");
-else
-System.out.println("(1):Called (2):Fold (3):Raise ");
-int n = reader.nextInt(); 
-		return n;
+		if(getOwed(player) <= 0 && (m.equals("1")  || m.equals("3")) ) 
+			return true;
+		else if((m.equals("1")  || m.equals("2") || m.equals("3") ) )
+			return true;
+		else if(!m.equals(""))
+			sendMessage("bad input", player);
+		return false;
 	}
 	
-	private void bettingRound() {
-		System.out.println(players.length);
-		System.out.println("Table = " +table);
-		System.out.println("Pot is "+getPot());
-		for (int i = 0; i < players.length; i++) {
-			if (players[i] != null) {
-				System.out.println(players[i]+" "+i);
-				
-			}
-		}
-		
-		boolean raisedThisRound = true;
-		while(raisedThisRound ) {
-			raisedThisRound = false;
-			
-			
-			for (int i = 0; i < players.length; i++) {
-				if(players[i] != null) {
-					int resp = 2;
-					if(i == 0)
-					resp = getPlayerResponse(i);
-				
-					if(resp == 1) {
-						StubMethod("Payed ++");
-					}
-					else if(resp == 2) {
-						playerPayed[i] += getOwed(i);
-					}
-					
-					else if(resp == 3) {
-						playerPayed[i] += getOwed(i)+getRaise(i);
-						raisedThisRound = true;
-					}
-				}
-				
-			}
-			
-		}
-
-	
-		
-	}
-	
-	private double getRaise(int player){
-
-System.out.println("Raise how much?");
-double n = reader.nextDouble(); 
-		return n;
-	}
 	
 	private void Showdown() {
-		System.out.println("---------------------------------------");
-		System.out.println("!!! SHOWDOWN !!!");
+		sendMessage("-----------------------------------------------");
+		sendMessage("!!! SHOWDOWN !!!");
+		sendMessage("-----------------------------------------------");
 		Hand compareHand = new Hand();
 for (int hand = 0; hand < players.length; hand++) {
 	
@@ -210,35 +132,59 @@ for (int hand = 0; hand < players.length; hand++) {
 				Card c = players[hand].getHand().get(j);
 				compareHand.AddCard(c);
 			}
+			findCombos(compareHand, hand);
 		
-//			Collections.sort(compareHand.getHand(),new Comparator<Card>(){
-//				
-//
-//				@Override
-//				public int compare(Card o1, Card o2) {
-//	int retInt = 0;
-//	if(o1.getValue()>o2.getValue())
-//	retInt = -1;
-//	else if (o1.getValue()==o2.getValue())
-//		retInt = 0;
-//	else
-//		retInt = 1;
-//
-//	return retInt;
-//				}
-//				 });
-//			
-		
-//		System.out.println(
-				findCombos(compareHand, hand);
-//				);
+			switch(playerScore[hand]) {
+			case(100):
+				sendMessage("Royal", hand);
+			break;
+			case(90):
+				sendMessage("straight flush", hand);
+			break;
+			case(80):
+				sendMessage("four of a kind", hand);
+			break;
+			case(70):
+				sendMessage("fullhouse", hand);
+			break;
+			case(60):
+				sendMessage("flush", hand);
+			break;
+			case(50):
+				sendMessage("straight", hand);
+			break;
+			case(40):
+				sendMessage("three of a kind", hand);
+			break;
+			case(30):
+				sendMessage("two pair", hand);
+			break;
+			case(20):
+				sendMessage("one pair", hand);
+			break;
+			default:
+				sendMessage("high card", hand);
+			break;
+			}
 
 		
 	}
-//		System.out.println("---------------------------------------");
 	}
 	
-	
+
+	private void sendMessage(String string) {
+for(Session s : playersList) {
+	sendMessage(string, this.playersList.indexOf(s));
+}
+	}
+	private void sendMessage(String string, int i) {
+		try {
+			playersList.get(i).getBasicRemote().sendText(string);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
 	public void findCombos(Hand h, int player) {
 		playerScore[player] = 0;
 
@@ -288,41 +234,7 @@ for (int hand = 0; hand < players.length; hand++) {
 								c.getHand().set(4, c5);
 								int thisScore = EvaluateHand(c);
 if(thisScore > playerScore[player]){
-	System.out.println(thisScore);
 	playerScore[player] = thisScore;
-	System.out.println(c);
-	switch(thisScore) {
-	case(100):
-		System.out.println("Royal");
-	break;
-	case(90):
-		System.out.println("straight flush");
-	break;
-	case(80):
-		System.out.println("four of a kind");
-	break;
-	case(70):
-		System.out.println("fullhouse");
-	break;
-	case(60):
-		System.out.println("flush");
-	break;
-	case(50):
-		System.out.println("straight");
-	break;
-	case(40):
-		System.out.println("three of a kind");
-	break;
-	case(30):
-		System.out.println("two pair");
-	break;
-	case(20):
-		System.out.println("one pair");
-	break;
-	default:
-		System.out.println("high card");
-	break;
-	}
 }
 								
 							}								
@@ -341,45 +253,58 @@ if(thisScore > playerScore[player]){
 			
 			
 			
-//			for (int i = 0; i < h.getHand().size(); i++) {
-////				System.out.println("i="+i);
-//				Card card = h.getHand().get(i);
-//				c[0] = card;
-//				for (int j = 0; j < h.getHand().size(); j++) {
-////					System.out.println("j="+j);
-//					for (int j2 = 1; j2 < 5; j2++) {
-//						int cardNo = j2+j-1;
-//						if(cardNo >= i)
-//							cardNo++;
-//						if(cardNo >= 7)
-//							cardNo = (cardNo-7);
-//						c[j2] = h.getHand().get(cardNo);
-////						System.out.println("j2="+j2);
-////						System.out.println("cardNo="+cardNo);
-//							
-//						
-//					}
-//
-//
-//					for (Card cardo : c) {
-//						System.out.print(cardo+" ");
-//					}	
-//					System.out.println();
-//				}
-//				
-//			}
-			
-			
-			
-			
-			
-			
-				
-//				return retStr;
 	
 	}
-	
+	public int awaitPlayer(int playerPos) {
+		lastMessage = "";
+		lastSender = null;
+		
+		synchronized (this){
 
+					while(!this.verifyPlayerInput(lastMessage, playerPos)) {
+
+							try {
+								this.playersList.get(playerPos).getBasicRemote().sendText("(1):Called (2):Fold (3):Raise ");
+								this.wait();
+							} 
+							
+							catch (IOException e) {
+								e.printStackTrace();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+					
+					}
+			  }
+		
+		
+
+		return Integer.parseInt(lastMessage);
+	}
+
+	public static void updateLastMessage(String message, Session s, Holdem h) {
+		h.lastMessage = message;
+		h.lastSender = s;
+		     synchronized(h) {
+		          h.notify();
+		     }	
+//		}
+
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 		public int EvaluateHand(Hand h) {
 int handRating = 0;
 Hand hand = new Hand();
@@ -448,8 +373,6 @@ return retInt;
 							&& h.getHand().get(0).getSuit() == h.getHand().get(2).getSuit()
 							&& h.getHand().get(0).getSuit() == h.getHand().get(3).getSuit()
 							&& h.getHand().get(0).getSuit() == h.getHand().get(4).getSuit()) {
-//				System.out.println(hand);
-//				System.out.println("Royal");
 				handRating = 100;
 			}
 
@@ -465,26 +388,18 @@ return retInt;
 							&& h.getHand().get(0).getSuit() == h.getHand().get(3).getSuit()
 							&& h.getHand().get(0).getSuit() == h.getHand().get(4).getSuit()
 					) {
-//				System.out.println(hand);
-//				System.out.println("Straight flush ");
 				handRating = 90;
 			}
 			else if(fourOfAKind) {
-//				System.out.println(hand);
-//				System.out.println("four of a kind");
 				handRating = 80;
 			}
 			else if(fullHouse) {
-//				System.out.println(hand);
-//				System.out.println("fullhouse");
 				handRating = 70;
 			}
 			else if( h.getHand().get(0).getSuit() == h.getHand().get(1).getSuit()
 					&& h.getHand().get(0).getSuit() == h.getHand().get(2).getSuit()
 					&& h.getHand().get(0).getSuit() == h.getHand().get(3).getSuit()
 					&& h.getHand().get(0).getSuit() == h.getHand().get(4).getSuit()) {
-//				System.out.println(hand);
-//				System.out.println("flush");
 				handRating = 60;
 			}
 			else if(h.getHand().get(0).getValue() == lowestVal+4
@@ -492,23 +407,15 @@ return retInt;
 					&& h.getHand().get(2).getValue() == lowestVal+2
 					&& h.getHand().get(3).getValue() == lowestVal+1
 					&& h.getHand().get(4).getValue() == lowestVal) {
-//				System.out.println(hand);
-//				System.out.println("Straight");
 				handRating = 50;
 			}
 			else if(threeOfAKind) {
-//				System.out.println(hand);
-//				System.out.println("three of a kind");
 				handRating = 40;
 			}
 			else if(twoPair) {
-//				System.out.println(hand);
-//				System.out.println("two pair");
 				handRating = 30;
 			}
 			else if(onePair) {
-//				System.out.println(hand);
-//				System.out.println("one pair");
 				handRating = 20;
 				
 			}
@@ -520,6 +427,86 @@ return retInt;
 					
 			}
 			return handRating;
+		}
+
+		@Override
+		public void run() {
+
+			players = new Hand[playersList.size()];
+			playerPayed = new double[playersList.size()];
+			playerScore = new int[playersList.size()];
+			deck = new Deck();
+			
+			
+			
+			
+			
+			for(int i = 0; i < playersList.size(); i++) {
+				
+				if(playersList.get(i).isOpen() ){
+						sendMessage("Round begin ", i);
+					int option = awaitPlayer(i);
+					players[i] = new Hand();
+					StubMethod("remove blinds from player, add blinds to pot (fold, raise or call)");
+					if(StubMethod("if Bigfolds or raise")) {
+						StubMethod("set owed (or payed)");
+					}
+				}
+			}
+
+//			bettingRound();
+
+			deck.shuffle();
+			
+			//Player cards dealt
+			for (int card = 0; card < 2; card++) {
+				for (int i = 0; i < playersList.size(); i++) {
+					if(players[i] != null) {
+						players[i].AddCard(deck);
+						}
+				}
+			}
+
+			
+			
+
+
+			
+			//The Flop
+				table = new Hand();
+				for (int j = 0; j < 3; j++) {
+					table.AddCard(deck);
+				}
+
+				bettingRound();
+				
+				// The turn
+				table.AddCard(deck);	
+				
+
+
+				bettingRound();
+
+				
+				
+				// The river
+				table.AddCard(deck);
+				
+
+				bettingRound();
+
+				Showdown();
+				
+
+				sendMessage("Table = " +table);
+				sendMessage("Pot is "+getPot());
+				for (int i = 0; i < players.length; i++) {
+					if (players[i] != null) {
+						sendMessage(players[i]+" "+i, i);
+						
+					}
+				}
+		
 		}
 
 }
