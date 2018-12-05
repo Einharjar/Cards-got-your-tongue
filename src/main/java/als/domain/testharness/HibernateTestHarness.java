@@ -26,11 +26,14 @@ public class HibernateTestHarness {
 	private static SessionFactory sessionFactory = null;
 	public static void main(String[] args) {
 //		Dummy testStudent = new Dummy("wololo");
+		Users testStudent = new Users("wololo", "asd", "awdasd", "asdf");
 		
 		SessionFactory sf = buildSessionFactory();
 		
 		Session session = sf.openSession();
+		session.save(testStudent);
 		Transaction tx = session.beginTransaction();
+//		tx.
 		TypedQuery<Users> query = session.createQuery("FROM Users");
 		    
 		    List<Users> result = query.getResultList();

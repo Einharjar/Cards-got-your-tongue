@@ -15,13 +15,10 @@ import holdem.Holdem;
 @ServerEndpoint("/websocket")
 public class TestEndpoint {
 	boolean started = false;
-//	Map<String, Session> sessions = new ConcurrentHashMap<>();
 	static ArrayList<Session> sessions = new ArrayList<Session>();;
-//	static ArrayList<Lobby> games = new ArrayList<Lobby>();;
 	static Map<Integer, Lobby> games = new HashMap<Integer, Lobby>();;
 	static Map<Session, Lobby> sessionToGame = new HashMap<Session, Lobby>();;
 	static Map<Session, String> sessionToName = new HashMap<Session, String>();;
-//	ArrayList<ArrayList<Session>> gamesUsers = new ArrayList<ArrayList<Session>>();
     @OnMessage
     public void onMessage(String message, Session session) {
 //    	if(!sessionToName.containsKey(session)) {
