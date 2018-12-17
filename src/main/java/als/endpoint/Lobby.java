@@ -13,11 +13,11 @@ public class Lobby {
 	Session host;
 	Holdem game;
 	public Lobby(Session host, Class gameType) {
-		id = Endpoint.firstFreeID();
+		id = Websocket.firstFreeID();
 		this.host = host;
-		Endpoint.userJoinLobby(host, this);
+		Websocket.userJoinLobby(host, this);
 		this.gameType = gameType;
-		Endpoint.newLobby(this);
+		Websocket.newLobby(this);
 		game = new Holdem();
 
 	}

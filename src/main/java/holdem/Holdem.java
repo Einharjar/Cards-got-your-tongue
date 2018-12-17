@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 import javax.websocket.Session;
 
-import als.endpoint.Endpoint;
+import als.endpoint.Websocket;
 import handelers.DBwriter;
 
 
@@ -635,9 +635,9 @@ return retInt;
 				sendMessage("THE WINNER IS PLAYER:" +winner);
 				for (int i = 0; i < playerScore.length; i++) {
 					if(i == winner)
-					DBwriter.addBananas(Endpoint.sessionToName.get(playersList.get(winner)), ((Double) getPot()).intValue() );
+					DBwriter.addBananas(Websocket.sessionToName.get(playersList.get(winner)), ((Double) getPot()).intValue() );
 					else
-						DBwriter.removeBananas(Endpoint.sessionToName.get(playersList.get(i)), ((Double) playerPayed[i]).intValue() );
+						DBwriter.removeBananas(Websocket.sessionToName.get(playersList.get(i)), ((Double) playerPayed[i]).intValue() );
 				}
 				sendMessage("Table = " +table);
 //				sendMessage("Pot is "+getPot());

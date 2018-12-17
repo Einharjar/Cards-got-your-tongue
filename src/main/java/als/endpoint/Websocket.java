@@ -21,7 +21,7 @@ import handelers.JSonParser;
 import holdem.Holdem;
 
 @ServerEndpoint("/websocket")
-public class Endpoint {
+public class Websocket {
 	boolean started = false;
 	static ArrayList<Session> sessions = new ArrayList<Session>();;
 	static Map<Integer, Lobby> games = new HashMap<Integer, Lobby>();;

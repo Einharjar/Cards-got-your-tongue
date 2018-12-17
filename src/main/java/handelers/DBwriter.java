@@ -14,6 +14,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import als.domain.PersonDetails;
+import als.domain.Transactions;
 import als.domain.Users;
 
 public class DBwriter {
@@ -32,9 +33,10 @@ public class DBwriter {
 
 	    for(Users u : result) {
 	    	if(username.equals(u.getUsername())) {
-//	    		return;
+	    		Transactions t = new Transactions(username, b, "");
 	    		u.removeBananas(b);
 	    		session.save(u);
+	    		session.save(t);
 	    		Transaction tx = session.beginTransaction();
 	    	    tx.commit();
 	    	    break;
@@ -56,8 +58,10 @@ public class DBwriter {
 	    for(Users u : result) {
 	    	if(username.equals(u.getUsername())) {
 //	    		return;
+	    		Transactions t = new Transactions(username, b, "");
 	    		u.addBananas(b);
 	    		session.save(u);
+	    		session.save(t);
 	    		Transaction tx = session.beginTransaction();
 	    	    tx.commit();
 	    	    break;
@@ -66,6 +70,27 @@ public class DBwriter {
 	    
 
 	    session.close();
+	}
+	
+	
+	public static Users getUser(int id) {
+		Session session = sf.openSession();
+		@SuppressWarnings("unchecked")
+		TypedQuery<Users> query = session.createQuery("FROM Users");
+	    List<Users> result = query.getResultList();
+	    
+
+	    for(Users u : result) {
+	    	if(id == (u.getUserId())) {
+	    	    session.close();
+	    		return u;
+	    		
+	    	}
+	    	}
+	    
+
+	    session.close();
+		return null;
 	}
 	
 	public static boolean autenticateUser(String username, String password) {
