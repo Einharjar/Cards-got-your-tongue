@@ -8,6 +8,9 @@ import java.util.Scanner;
 
 import javax.websocket.Session;
 
+import als.endpoint.Endpoint;
+import handelers.DBwriter;
+
 
 
 
@@ -27,6 +30,7 @@ public class Holdem implements Runnable{
 	double[] playerPayed;
 	int[] playerScore;
 	int dealer = 0;
+	Hand lastBetter;
 	Hand table;
 	Deck deck;
 	double bigBlinds= 30;
@@ -50,31 +54,64 @@ public class Holdem implements Runnable{
 		    t1.start();
 	}
 
+	private int getActive() {
+		int active = 0;
+//		ArrayList<Hand> activeList = new ArrayList<Hand>();
+		for(Hand h : players) {
+			if(h != null) {
+				active ++;
+//				activeList.add(h);
+			}
+		}
+		return active;
+	}
+		
+//		
+//		return false;
+//	}
 	private void bettingRound() {
 		sendMessage("-----------------------------------");
-		for(int i = 0; i < playersList.size() ; i++) {
 		
+//		for(int i = 0; i < playersList.size() ; i++) {
+		int i = 0;
+		lastBetter = null;
+//		while(players[i >= players.length ? 0 : i] != lastBetter && getActive() > 1) {
+
+		while(players[i] != lastBetter ) {	
+			
+			if(players[i] == null)
+			continue;
+			
+			
 		if(playersList.get(i).isOpen() ){
 			sendMessage("Round begin ", i);
 			sendMessage(players[i].toString(), i);
 			sendMessage("Table is "+table.toString(), i);
+			sendMessage("the pot is "+Double.toString(getPot()));
 		int option = awaitPlayer(i);
 //		players[i] = new Hand();
 		
 		if(option == 1) {
-			StubMethod("Payed ++");
+			playerPayed[i] += getOwed(i);
 		}
 		else if(option == 2) {
 			players[i] = null;
 		}
 		
 		else if(option == 3) {
+			lastBetter = players[i];
+			playerPayed[i] += awaitPlayerRaise(i);
 		}
 		
 		
 		
 		
 	}
+			i++;
+			if(i == players.length && lastBetter == null)
+			break;
+			if(i >= players.length)
+				i = 0;
 }
 		
 	}
@@ -112,7 +149,16 @@ public class Holdem implements Runnable{
 			sendMessage("bad input", player);
 		return false;
 	}
-	
+	public boolean verifyRaise(String m, int player) {
+
+try {
+	Double.parseDouble(m);
+	return true;
+} catch (Exception e) {
+	sendMessage("bad input", player);
+	return false;
+}
+	}
 	
 	private void Showdown() {
 		sendMessage("-----------------------------------------------");
@@ -281,6 +327,35 @@ if(thisScore > playerScore[player]){
 
 		return Integer.parseInt(lastMessage);
 	}
+	public int awaitPlayerRaise(int playerPos) {
+		lastMessage = "";
+		lastSender = null;
+		
+		synchronized (this){
+
+					while(!this.verifyRaise(lastMessage, playerPos)) {
+
+							try {
+								this.playersList.get(playerPos).getBasicRemote().sendText("Raise how much?");
+								this.wait();
+							} 
+							
+							catch (IOException e) {
+								e.printStackTrace();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+					
+					}
+			  }
+		
+		
+
+		return Integer.parseInt(lastMessage);
+	}
+	
+	
+	
 
 	public static void updateLastMessage(String message, Session s, Holdem h) {
 		h.lastMessage = message;
@@ -441,20 +516,72 @@ return retInt;
 			
 			
 			
-			for(int i = 0; i < playersList.size(); i++) {
+//			for(int i = 0; i < playersList.size(); i++) {
+//				
+//				if(playersList.get(i).isOpen() ){
+//						sendMessage("Round begin ", i);
+//					int option = awaitPlayer(i);
+//					players[i] = new Hand();
+//					StubMethod("remove blinds from player, add blinds to pot (fold, raise or call)");
+//					if(StubMethod("if Bigfolds or raise")) {
+//						StubMethod("set owed (or payed)");
+//					}
+//				}
+//			}
+			
+			{
 				
-				if(playersList.get(i).isOpen() ){
-						sendMessage("Round begin ", i);
-					int option = awaitPlayer(i);
+				for (int i = 0; i < players.length; i++) {
 					players[i] = new Hand();
-					StubMethod("remove blinds from player, add blinds to pot (fold, raise or call)");
-					if(StubMethod("if Bigfolds or raise")) {
-						StubMethod("set owed (or payed)");
-					}
+					
 				}
+				
+			int i = 0;
+			lastBetter = null;
+			while(players[i] != lastBetter ) {
+			
+//				if(i >= players.length)
+//					i = 0;
+//				if(players[i] == null)
+//				continue;
+				
+				
+			if(playersList.get(i).isOpen() ){
+				sendMessage("Round begin ", i);
+//				sendMessage(players[i].toString(), i);
+				sendMessage(Double.toString(getOwed(i)), i);
+//				sendMessage("Table is "+table.toString(), i);
+			int option = awaitPlayer(i);
+//			players[i] = new Hand();
+			
+			if(option == 1) {
+				players[i] = new Hand();
+				playerPayed[i] += getOwed(i);
 			}
+			else if(option == 2) {
+				players[i] = null;
+			}
+			
+			else if(option == 3) {
+				players[i] = new Hand();
+				lastBetter = players[i];
+				playerPayed[i] += awaitPlayerRaise(i);
+			}
+			
+			
+			
+			
+		}
+				i++;
+				if(i == players.length && lastBetter == null)
+					break;
+					if(i >= players.length)
+						i = 0;
+	}
+			}
+			
+			lastBetter = null;
 
-//			bettingRound();
 
 			deck.shuffle();
 			
@@ -497,15 +624,29 @@ return retInt;
 
 				Showdown();
 				
-
-				sendMessage("Table = " +table);
-				sendMessage("Pot is "+getPot());
-				for (int i = 0; i < players.length; i++) {
-					if (players[i] != null) {
-						sendMessage(players[i]+" "+i, i);
-						
+				int highestScore = 0;
+				int winner = 0;
+				for (int i = 0; i < playerScore.length; i++) {
+					if(playerScore[i] > highestScore) {
+						highestScore = playerScore[i];
+						winner = i;
 					}
 				}
+				sendMessage("THE WINNER IS PLAYER:" +winner);
+				for (int i = 0; i < playerScore.length; i++) {
+					if(i == winner)
+					DBwriter.addBananas(Endpoint.sessionToName.get(playersList.get(winner)), ((Double) getPot()).intValue() );
+					else
+						DBwriter.removeBananas(Endpoint.sessionToName.get(playersList.get(i)), ((Double) playerPayed[i]).intValue() );
+				}
+				sendMessage("Table = " +table);
+//				sendMessage("Pot is "+getPot());
+//				for (int i = 0; i < players.length; i++) {
+//					if (players[i] != null) {
+//						sendMessage(players[i]+" "+i, i);
+//						
+//					}
+//				}
 		
 		}
 

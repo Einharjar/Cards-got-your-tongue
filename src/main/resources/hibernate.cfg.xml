@@ -14,5 +14,8 @@
 
    		<mapping class="als.domain.Dummy"/>
    		<mapping class="als.domain.Users"/>
+   		<mapping class="als.domain.PersonDetails"/>
+  <!-- 		<mapping class="als.domain.Scoreboard"/>
+   		<mapping class="als.domain.Transactions"/> -->
     </session-factory>
 </hibernate-configuration>

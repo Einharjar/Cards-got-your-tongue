@@ -17,7 +17,9 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import als.domain.Dummy;
+import als.domain.PersonDetails;
 import als.domain.Users;
+import handelers.JSonParser;
 
 
 public class HibernateTestHarness {
@@ -25,8 +27,13 @@ public class HibernateTestHarness {
 	
 	private static SessionFactory sessionFactory = null;
 	public static void main(String[] args) {
+		
+//		new JSonParser();
+//		JSonParser.jsonToObject("");
+		
 //		Dummy testStudent = new Dummy("wololo");
-		Users testStudent = new Users("wololo", "asd", "awdasd", "asdf");
+		PersonDetails d = new PersonDetails(25221444, "", "", "test@examples.se");
+		Users testStudent = new Users(d, "alex", "alex");
 		
 		SessionFactory sf = buildSessionFactory();
 		

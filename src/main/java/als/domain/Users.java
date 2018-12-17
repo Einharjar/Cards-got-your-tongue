@@ -5,41 +5,103 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 public class Users {
-
-    public Users(){
-        this.userName = "Johan";
-        this.firstName = "Falk";
-        this.lastName = "Falk";
-        this.userEmail = "asdfasfas";
-        }
-
-    //TODO
-    //Make another constructor
-    public Users(String userName, String firstName, String lastName, String userEmail) {
-        this.userName = userName;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.userEmail = userEmail;
-    }
-
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+//    @GeneratedValue(strategy=GenerationType.AUTO)
+    
     @Column(name="userId")
     private int userId;
+    
+//    @Column(name="Details")
 
-    @Column(name="userName")
-    private String userName;
+    @ManyToOne
+    @JoinColumn(name = "personId")
+    private PersonDetails details;
+    
+    @Column(name="userName"//,  nullable = false, columnDefinition = "varchar default 35"
+    		)
+    private String username;
+    
+    @Column(name="password"//,  nullable = false, columnDefinition = "varchar default 35"
+    		)
+    private String password;
 
-    @Column (name="firstName")
-    private String firstName;
+    @Column(name="bananas"//,  nullable = false, columnDefinition = "varchar default 35"
+    		)
+    private int bananas;
 
-    @Column (name="lastName")
-    private String lastName;
 
-    @Column (name="userEmail")
-    private String userEmail;
+    public int getBananas() {
+		return bananas;
+	}
 
-    public int getUserId() {
+	public void setBananas(int bananas) {
+		this.bananas = bananas;
+	}
+
+	public void addBananas(int bananas) {
+		this.bananas += bananas;
+	}
+	public void removeBananas(int bananas) {
+		this.bananas -= bananas;
+	}
+
+	public Users() {
+	}
+
+    public Users(int userId, String username, String password) {
+		super();
+		this.userId = userId;
+		this.username = username;
+		this.password = password;
+	}
+    
+    public Users(PersonDetails details, String username, String password) {
+		super();
+		this.userId = details.getPerson();
+		this.details = details;
+		this.username = username;
+		this.password = password;
+	}
+
+
+
+	public PersonDetails getDetails() {
+		return details;
+	}
+
+
+
+	public void setDetails(PersonDetails details) {
+		this.details = details;
+	}
+
+
+
+	public String getUsername() {
+		return username;
+	}
+
+
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+
+
+	public String getPassword() {
+		return password;
+	}
+
+
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+
+
+	public int getUserId() {
         return userId;
     }
 
@@ -48,46 +110,20 @@ public class Users {
     }
 
     public String getUserName() {
-        return userName;
+        return username;
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.username = userName;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
-    }
 
 
     @Override
     public String toString() {
         return "Users{" +
                 "userId=" + userId +
-                ", userName='" + userName + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", userEmail='" + userEmail + '\'' +
+                ", userName='" + username + '\'' +
                 '}';
     }
 }

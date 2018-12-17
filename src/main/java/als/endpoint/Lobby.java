@@ -1,3 +1,4 @@
+package als.endpoint;
 import java.util.ArrayList;
 
 import javax.websocket.Session;
@@ -12,11 +13,11 @@ public class Lobby {
 	Session host;
 	Holdem game;
 	public Lobby(Session host, Class gameType) {
-		id = TestEndpoint.firstFreeID();
+		id = Endpoint.firstFreeID();
 		this.host = host;
-		TestEndpoint.userJoinLobby(host, this);
+		Endpoint.userJoinLobby(host, this);
 		this.gameType = gameType;
-		TestEndpoint.newLobby(this);
+		Endpoint.newLobby(this);
 		game = new Holdem();
 
 	}
@@ -26,7 +27,7 @@ public class Lobby {
 //	}
 //	
 	public void forwardMessage(String m, Session s) {
-		game.updateLastMessage(m, s, game);
+		Holdem.updateLastMessage(m, s, game);
 	}
 	public void start() {
 		game.start(players);

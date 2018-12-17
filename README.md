@@ -12,3 +12,56 @@ There's also two urls hosted via servlets;
 http://localhost:8080/casino/login
 http://localhost:8080/casino/holdem
 
+
+
+
+{
+"request" : "register",
+"username" : "John",
+"password": "qwerty",
+"bananas" : 0.0,
+"userId" : 1688.0,
+"details" :   {
+"personId" : 1688.0,
+"firstName" : "John",
+"lastName" : "Smith"
+} 
+}
+
+{
+"request" : "login",
+"username" : "John",
+"password": "qwerty" 
+}
+
+{
+"request" : "login",
+"username" : "alex",
+"password" : "qwerty"
+}
+
+
+{
+"request" : "string",
+"string" : "newlobby"
+}
+
+{
+"request" : "string",
+"string" : "getlobbies"
+}
+
+{
+"request" : "join",
+"join" : 0.0
+}
+
+{
+"request" : "string",
+"string" : "thislobby"
+}
+
+{
+"request" : "string",
+"string" : "start"
+}
