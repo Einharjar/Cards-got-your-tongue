@@ -73,7 +73,7 @@ public class DBwriter {
 	}
 	
 	
-	public static Users getUser(int id) {
+	public static Users getUserByID(int id) {
 		Session session = sf.openSession();
 		@SuppressWarnings("unchecked")
 		TypedQuery<Users> query = session.createQuery("FROM Users");
@@ -92,6 +92,38 @@ public class DBwriter {
 	    session.close();
 		return null;
 	}
+
+	public static List<Users> getAllUsers() {
+
+		Session session = sf.openSession();
+		@SuppressWarnings("unchecked")
+		TypedQuery<Users> query = session.createQuery("FROM Users");
+	    List<Users> result = query.getResultList();
+	    session.close();
+		return result;
+	}
+	
+	
+	public static Users getUser(String username) {
+		
+		Session session = sf.openSession();
+		@SuppressWarnings("unchecked")
+		TypedQuery<Users> query = session.createQuery("FROM Users");
+	    List<Users> result = query.getResultList();
+	    
+
+	    for(Users u : result) {
+	    	if(username.equals(u.getUserName())) {
+	    	    session.close();
+	    		return u;
+	    	}
+	    	}
+	    
+	    session.close();
+		
+		return null;
+	}
+	
 	
 	public static boolean autenticateUser(String username, String password) {
 		
@@ -150,9 +182,12 @@ public class DBwriter {
 	}
 	public static void main(String[] args) {
 		
-//		PersonDetails ud = new PersonDetails(420, "john", "larsson", "");
+		PersonDetails ud = new PersonDetails(420, "john", "larsson", "");
 //		writeNewPerson(ud);
-//		Users u = new Users(0, "john", "qwerty");
+		Users u = new Users(0, "john", "qwerty");
+		u.setDetails(ud);
+		
+		System.out.println(JSonParser.toJson(u));
 //		System.out.println(writeNewUser(u, 420));
 //	    sf.close();
 	}

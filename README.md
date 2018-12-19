@@ -14,9 +14,11 @@ http://localhost:8080/casino/holdem
 
 
 
+ws://localhost:8080/casino/websocket
 
 {
 "request" : "register",
+"user": {
 "username" : "John",
 "password": "qwerty",
 "bananas" : 0.0,
@@ -25,8 +27,26 @@ http://localhost:8080/casino/holdem
 "personId" : 1688.0,
 "firstName" : "John",
 "lastName" : "Smith"
+}
 } 
 }
+
+localhost:8080/casino/webservice/users/username/john
+{
+"userId":0,
+"details":{
+"personId":420,
+"firstName":"john",
+"lastName":"larsson",
+"userEmail":""
+},
+"username":"john",
+"password":"qwerty",
+"bananas":500
+}
+
+
+
 
 {
 "request" : "login",

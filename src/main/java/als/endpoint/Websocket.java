@@ -42,10 +42,7 @@ public class Websocket {
      	System.out.println(requestType);
     	 
     	if(!sessionToName.containsKey(session)) {
-//       	 System.out.println("onMessage");
             if(requestType.equals("login")) {
-//              	 System.out.println("login");
-//            	String subs = message.substring(16, message.indexOf('"', 16));
             	String username = (String) retMap.get("username");
             	String password = (String) retMap.get("password");
             	if(DBwriter.autenticateUser(username, password)) {
@@ -57,20 +54,14 @@ public class Websocket {
             		
             }
             else if(requestType.equals("register")) {
-//             	 System.out.println("register");
+             	 System.out.println(retMap.get("user").getClass().getSimpleName());
             	try {
-            		LinkedTreeMap ltm = (LinkedTreeMap) retMap.get("details");
-
-            		String fname = (String) ltm.get("firstName");
-            		String lname = (String) ltm.get("lastName");
-            		int uid = ((Double) ltm.get("personId")).intValue();
-            		PersonDetails pd = new PersonDetails(uid,fname, lname, "");
+            		Users u = JSonParser.userFromJson(retMap.get("user"));
+            		PersonDetails p = u.getDetails();
             		
             		
-            		
-            		String username = (String) retMap.get("username");
-            		String password = (String) retMap.get("password");
-            		DBwriter.writeNewUser(username, password, uid, fname, lname);
+            		DBwriter.writeNewPerson(p);
+            		DBwriter.writeNewUser(u, u.getUserId());
                 	sessionToName.put(session, (String) retMap.get("username"));
 
                 	onServerMessage("Welcome online!", session);

@@ -124,6 +124,7 @@ public class Users {
         return "Users{" +
                 "userId=" + userId +
                 ", userName='" + username + '\'' +
+                ", Banannas='" + bananas+ '\'' +
                 '}';
     }
 }
