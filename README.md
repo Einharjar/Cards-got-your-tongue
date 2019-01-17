@@ -8,10 +8,6 @@ To build with maven run a "clean wildfly:deploy"
 There are several test classes which have their own main method you could test such as the game class for the Holdem test and
 testHarness for the database test.
 
-There's also two urls hosted via servlets;
-http://localhost:8080/casino/login
-http://localhost:8080/casino/holdem
-
 
 
 ws://localhost:8080/casino/websocket
