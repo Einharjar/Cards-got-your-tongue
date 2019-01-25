@@ -12,6 +12,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 
 import als.domain.PersonDetails;
@@ -29,7 +31,6 @@ public class Websocket {
 	public static Map<Session, String> sessionToName = new HashMap<Session, String>();;
     @OnMessage
     public void onMessage(String message, Session session) {
-    	
     	Map<String, Object> retMap = new HashMap<String, Object>();
     	 retMap = JSonParser.parseJson(message);
     	
@@ -46,11 +47,18 @@ public class Websocket {
             	String username = (String) retMap.get("username");
             	String password = (String) retMap.get("password");
             	if(DBwriter.autenticateUser(username, password)) {
-                	onServerMessage("Welcome online!", session);
+            		JsonObject jsonObject = new JsonObject();
+            		jsonObject.addProperty("request", "login");
+            		jsonObject.addProperty("success", false);
                 	sessionToName.put(session, username);
+                	onServerMessage(jsonObject.getAsString(), session);
             	}
-            	else
-                	onServerMessage("Login Failed!", session);
+            	else {
+            		JsonObject jsonObject = new JsonObject();
+            		jsonObject.addProperty("request", "login");
+            		jsonObject.addProperty("success", false);
+                	onServerMessage(jsonObject.getAsString(), session);
+            	}
             		
             }
             else if(requestType.equals("register")) {

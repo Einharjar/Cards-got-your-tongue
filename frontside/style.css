@@ -1,0 +1,66 @@
+#lobby{
+    background-color:DarkSlateGrey  ;
+	
+  position: relative;
+  width: 50%;
+  height: auto;
+  margin: auto;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+#userID{
+width: 100%;
+    border:10px solid gray;
+}
+#lobbyDiv{
+    background-color:DarkSlateGrey  ;
+
+    opacity:1;
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0px;
+    left:0px;
+    z-index:1000;
+}
+#login {  
+
+    opacity:1;
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0px;
+    left:0px;
+    z-index:1000;
+}
+  #login > div{
+  background-image: url("https://www.investors.com/wp-content/uploads/2017/04/MCRI-AUTO-040617-adobe.jpg");
+  background-size:cover;
+  background-repeat: no-repeat;
+	 
+  position: relative;
+  height: 100%;
+ }
+#loginForm {  
+    background-color:DarkSlateGrey  ;
+  
+
+  width: 25%;
+  min-width: 300px;
+  height: 25%;
+  min-height: 200px;
+  overflow: auto;
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  border: solid black;
+ }
+ 
+ 
+  #loginDiv{
+	 
+  position: relative;
+  width: 50%;
+  height: auto;
+  margin: auto;
+  top: 0; left: 0; bottom: 0; right: 0;
+ }
