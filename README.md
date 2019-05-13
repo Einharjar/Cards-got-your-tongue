@@ -44,4 +44,23 @@ A WIP Online casino test project
 
 ## Game time!!!
 
-### Use the frontend for the rest!
+### [Use the frontend for the rest!](http://localhost:80/?#/login)
+
+
+## Bugs / WIP
+
+1: Doesn't reset after a game finishes.
+
+2: No cookies / Crashes on reload without telling. If the user visits the pages without a signed session no replies will be given and the app appears unresponsive for the user.
+
+3: High Technical Debt, particularly in Websocket and Holdem classes but also through out the front end.
+
+4: Probably vulnerable to sql injections.
+
+5: Does not handle player backing out of game properly.
+
+6: Generally ugly.
+
+7: Lobbies does not auto update.
+
+8: Lack of Redux and general abuse of states in the frontend.
