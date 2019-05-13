@@ -2,28 +2,48 @@
 A WIP Online casino test project
 
 ##Requirements
+
 1:DBderby
+
 2:Application Server
+
 3:NPM
+
 
 ##Setup
 1: Run dbDerby at the 50000 port "startNetworkServer.bat -p 50000" from db-derby/bin directory
+
 2: Run wildfly by starting "standalone.bat" from the wildfly/bin directory (Or equivelent for other app-servers)
+
 3: Build with maven using "mvn clean wildfly:deploy"
+
 4: Run NPM with "npm run start" from the frontend directory.
+
 5: Create a new user by either post request at {PLACEHOLDER} or by websocket at ws://localhost:8080/casino/websocket
 
 
+
+
 WIP
+
 WIP
+
 WIP
+
 WIP
+
 WIP
+
 WIP
+
 WIP
+
 WIP
+
 WIP
+
 WIP
+
 WIP
 
 
