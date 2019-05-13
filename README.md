@@ -1,16 +1,31 @@
 # Chat-got-your-tongue
-Online casino test project
+A WIP Online casino test project
 
-1:Run dbDerby at the 50000 port "startNetworkServer.bat -p 50000" from db-derby/bin directory
-2:Run wildfly with "standalone.bat" from the wildfly/bin directory
-To build with maven run a "clean wildfly:deploy"
+##Requirements
+1:DBderby
+2:Application Server
+3:NPM
 
-There are several test classes which have their own main method you could test such as the game class for the Holdem test and
-testHarness for the database test.
+##Setup
+1: Run dbDerby at the 50000 port "startNetworkServer.bat -p 50000" from db-derby/bin directory
+2: Run wildfly by starting "standalone.bat" from the wildfly/bin directory (Or equivelent for other app-servers)
+3: Build with maven using "mvn clean wildfly:deploy"
+4: Run NPM with "npm run start" from the frontend directory.
+5: Create a new user by either post request at {PLACEHOLDER} or by websocket at ws://localhost:8080/casino/websocket
 
 
+WIP
+WIP
+WIP
+WIP
+WIP
+WIP
+WIP
+WIP
+WIP
+WIP
+WIP
 
-ws://localhost:8080/casino/websocket
 
 {
 "request" : "register",
