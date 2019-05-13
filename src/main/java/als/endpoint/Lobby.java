@@ -3,10 +3,14 @@ import java.util.ArrayList;
 
 import javax.websocket.Session;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import holdem.Holdem;
 
 public class Lobby {
 	ArrayList<Session> players = new ArrayList<>();
+
 	int maxPlayers = 10;
 	Class gameType;
 	int id;

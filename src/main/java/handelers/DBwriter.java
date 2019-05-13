@@ -49,6 +49,9 @@ public class DBwriter {
 	
 
 	public static void addBananas(String username, int b) {
+		if(b == 0)
+			return;
+					
 		Session session = sf.openSession();
 		@SuppressWarnings("unchecked")
 		TypedQuery<Users> query = session.createQuery("FROM Users");
@@ -57,9 +60,8 @@ public class DBwriter {
 
 	    for(Users u : result) {
 	    	if(username.equals(u.getUsername())) {
-//	    		return;
-	    		Transactions t = new Transactions(username, b, "");
 	    		u.addBananas(b);
+	    		Transactions t = new Transactions(username, b, "");
 	    		session.save(u);
 	    		session.save(t);
 	    		Transaction tx = session.beginTransaction();
@@ -183,37 +185,35 @@ public class DBwriter {
 	public static void main(String[] args) {
 		
 		PersonDetails ud = new PersonDetails(420, "john", "larsson", "");
-//		writeNewPerson(ud);
-		Users u = new Users(0, "john", "qwerty");
+		writeNewPerson(ud);
+		Users u = new Users(0, "q", "q");
 		u.setDetails(ud);
+		writeNewUser("q", "q", ud.getPerson(), ud.getFirstName(), ud.getLastName());
 		
 		System.out.println(JSonParser.toJson(u));
-//		System.out.println(writeNewUser(u, 420));
-//	    sf.close();
 	}
-	public static boolean writeNewUser(Users u, int pd) {
-
-		Session session = sf.openSession();
-		
-		@SuppressWarnings("unchecked")
-		TypedQuery<PersonDetails> query = session.createQuery("FROM PersonDetails");
-	    List<PersonDetails> result = query.getResultList();
-	    
-	    for(PersonDetails p : result) {
-	    	if(p.getPerson() == pd) {
-
-	    		session.save(u);
-	    		Transaction tx = session.beginTransaction();
-	    	    tx.commit();
-	    	    session.close();
-//	    	    sf.close();
-	    		return true;
-	    	}
-	    }
-	    
-		
-		return false;
-	}
+//	public static boolean writeNewUser(Users u, int pd) {
+//
+//		Session session = sf.openSession();
+//		
+//		@SuppressWarnings("unchecked")
+//		TypedQuery<PersonDetails> query = session.createQuery("FROM PersonDetails");
+//	    List<PersonDetails> result = query.getResultList();
+//	    
+//	    for(PersonDetails p : result) {
+//	    	if(p.getPerson() == pd) {
+//
+//	    		session.save(u);
+//	    		Transaction tx = session.beginTransaction();
+//	    	    tx.commit();
+//	    	    session.close();
+//	    		return true;
+//	    	}
+//	    }
+//	    
+//		
+//		return false;
+//	}
 	
 	  public static SessionFactory buildSessionFactory() {
 	        try {

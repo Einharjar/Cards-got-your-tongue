@@ -3,10 +3,24 @@ package holdem;
 
 import java.util.ArrayList;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 public class Hand {
 	@Override
 	public String toString() {
-		return "Hand [currentHand=" + currentHand + "]";
+//		StringBuilder sb = new StringBuilder();
+//	sb.append("[");
+//	for(int i = 0; i < currentHand.size() ; i++) {
+//		Card c = currentHand.get(i);
+//		sb.append("{\"value\":"+c.getFancyValue()+",\"suit\":\""+c.getSuit()+"\"}");
+//		if(currentHand.size()-1>i)
+//		sb.append(",");
+//	}
+//	sb.append("]");
+		
+		Gson gson = new Gson();
+		return gson.toJson(this.currentHand);
 	}
 
 	private ArrayList<Card>currentHand = new ArrayList<Card>();

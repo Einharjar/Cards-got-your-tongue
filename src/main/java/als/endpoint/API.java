@@ -47,7 +47,7 @@ public class API {
 		
 		
 		DBwriter.writeNewPerson(p);
-		DBwriter.writeNewUser(u, u.getUserId());
+		DBwriter.writeNewUser(u.getUserName(), u.getPassword(), u.getUserId(), p.getFirstName(), p.getLastName());
 		
 		
 		

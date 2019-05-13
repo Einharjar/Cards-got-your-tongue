@@ -4,12 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import javax.websocket.Session;
 
+import com.google.gson.JsonObject;
+
+import als.domain.Users;
 import als.endpoint.Websocket;
 import handelers.DBwriter;
+import handelers.JSonParser;
 
 
 
@@ -18,12 +23,13 @@ import handelers.DBwriter;
  * TODO
  * fixa så att blinds tas emot
  * fixa så att korten dealas från dealern
- * kolla vem som vinner
  * 
  */
 
 public class Holdem implements Runnable{
-	public String lastMessage = "";
+	static boolean VERBOSE = false;
+
+	public Map<String, Object> lastMessage = new HashMap<String, Object>();
 	public Session lastSender;
 	Scanner reader = new Scanner(System.in); 
 	Hand[] players;
@@ -35,16 +41,15 @@ public class Holdem implements Runnable{
 	Deck deck;
 	double bigBlinds= 30;
 	ArrayList<Session> playersList;
-	public Holdem() {
-
-
-		
-	}
+	public Holdem() {}
 	public void start(ArrayList<Session> playersList) {
 		this.playersList = playersList;
 		for(Session s : playersList) {
 			try {
-				s.getBasicRemote().sendText("Welcome to Texas Holdem");
+	    		JsonObject jsonObject = new JsonObject();
+	    		jsonObject.addProperty("request", "message");
+	    		jsonObject.addProperty("message", "Welcome to Texas Holdem");
+	    		s.getBasicRemote().sendText(jsonObject.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -69,6 +74,17 @@ public class Holdem implements Runnable{
 //		
 //		return false;
 //	}
+	public String getPrintableHand(Hand h) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < h.getHand().size() ; i++) {
+			sb.append("[");
+			Card c = h.getHand().get(i);
+			sb.append(c.getShortValue()+c.getShortSuit());
+			sb.append("]");
+		}
+
+		return sb.toString();
+	}
 	private void bettingRound() {
 		sendMessage("-----------------------------------");
 		
@@ -84,24 +100,61 @@ public class Holdem implements Runnable{
 			
 			
 		if(playersList.get(i).isOpen() ){
-			sendMessage("Round begin ", i);
-			sendMessage(players[i].toString(), i);
-			sendMessage("Table is "+table.toString(), i);
-			sendMessage("the pot is "+Double.toString(getPot()));
-		int option = awaitPlayer(i);
+    		JsonObject jsonObject = new JsonObject();
+    		jsonObject.addProperty("request", "message");
+    		jsonObject.addProperty("message", "Round begin");
+    		sendMessage(jsonObject.toString(), i);
+    		
+//			sendMessage("Round begin ", i);
+
+//    		 jsonObject = new JsonObject();
+//    		jsonObject.addProperty("request", "message");
+//    		jsonObject.addProperty("message", "Player turn");
+//    		jsonObject.addProperty("playerName", Websocket.sessionToName.get(this.playersList.get(i)));
+//    		sendMessage(jsonObject.toString());
+
+    		jsonObject = new JsonObject();
+    		jsonObject.addProperty("success", true);
+    		jsonObject.addProperty("request", "update");
+    		jsonObject.addProperty("game", "holdem");
+    		jsonObject.addProperty("player", getPrintableHand(players[i]));
+    		jsonObject.addProperty("table", getPrintableHand(table));
+    		jsonObject.addProperty("bananas", DBwriter.getUser(Websocket.sessionToName.get(playersList.get(i))).getBananas());
+    		jsonObject.addProperty("pot", Double.toString(getPot()));
+
+    		sendMessage(jsonObject.toString(), i);
+    		
+    		jsonObject = new JsonObject();
+    		jsonObject.addProperty("success", true);
+    		jsonObject.addProperty("request", "update");
+    		jsonObject.addProperty("game", "holdem");
+    		jsonObject.addProperty("activePlayer", Websocket.sessionToName.get(this.playersList.get(i)));
+    		sendMessage(jsonObject.toString());
+    		
+//			sendMessage(table.toString(), i);
+//			sendMessage("the pot is "+Double.toString(getPot()));
+			Map<String, Object> option = awaitPlayer(i);
 //		players[i] = new Hand();
+			
+
+//			System.out.println(option);
+//			System.out.println(option.get("raise"));
+//			System.out.println(option.get("action"));
+//			System.out.println(option.get("action").equals("raise"));
+			 if(option.containsKey("action")
+						&& option.get("action").equals("raise")) {
+				 raise(i,  (String) option.get("raise"));
+			}
+			 else if(option.containsKey("action") 
+				&& option.get("action").equals("call")) {
+			call(i);
+		}
+		else if(option.containsKey("action") 
+				&& option.get("action").equals("fold")) {
+			fold(i);
+					}
 		
-		if(option == 1) {
-			playerPayed[i] += getOwed(i);
-		}
-		else if(option == 2) {
-			players[i] = null;
-		}
-		
-		else if(option == 3) {
-			lastBetter = players[i];
-			playerPayed[i] += awaitPlayerRaise(i);
-		}
+	
 		
 		
 		
@@ -115,11 +168,35 @@ public class Holdem implements Runnable{
 }
 		
 	}
-
 	
-	private boolean StubMethod(String s) {
-		return false;
+	static void printIfVerbose(String s) {
+		if(VERBOSE) {
+			System.out.println(s);
+		}
 	}
+	
+	private boolean fold(int player) {
+		players[player] = null;
+		System.out.println("fold "+playerPayed[player]);
+		return true;
+	}
+	private boolean call(int player) {
+		playerPayed[player] += getOwed(player);
+		System.out.println("call "+playerPayed[player]);
+		return true;
+	}
+private boolean raise(int player, String raise) {
+	Users user = DBwriter.getUser(Websocket.sessionToName.get(playersList.get(player)));
+	double raiseAsDouble = Double.parseDouble(raise);
+	if(user.getBananas() >= raiseAsDouble) {
+	lastBetter = players[player];
+	playerPayed[player] += Double.parseDouble(raise);
+	System.out.println("raised "+playerPayed[player]);
+	return true;
+	}
+	return false;
+}
+	
 	private double getOwed(int player) {
 		double largest = 0;
 		for (int i = 0; i < players.length; i++) {
@@ -139,26 +216,39 @@ public class Holdem implements Runnable{
 		return amount;
 	}
 	
-	public boolean verifyPlayerInput(String m, int player) {
+	public boolean verifyPlayerInput(Map<String, Object> m, int player) {
 
-		if(getOwed(player) <= 0 && (m.equals("1")  || m.equals("3")) ) 
+		if(m != null && m.containsKey("action")) {
+		String action = m.get("action").toString();
+		
+		if(getOwed(player) <= 0 && (action.equals("call")  || (action.equals("raise"))) ) {
+			printIfVerbose("verifyPlayerInput is true");
 			return true;
-		else if((m.equals("1")  || m.equals("2") || m.equals("3") ) )
+		}
+		else if((action.equals("call")  || action.equals("fold") || action.equals("raise") ) ) {
+			printIfVerbose("verifyPlayerInput is true");
 			return true;
-		else if(!m.equals(""))
+		}
+		else 
 			sendMessage("bad input", player);
+		}
+		printIfVerbose("verifyPlayerInput is false");
 		return false;
 	}
-	public boolean verifyRaise(String m, int player) {
-
-try {
-	Double.parseDouble(m);
-	return true;
-} catch (Exception e) {
-	sendMessage("bad input", player);
-	return false;
-}
-	}
+	
+	
+	
+	
+//	public boolean verifyRaise(String m, int player) {
+//
+//try {
+//	Double.parseDouble(m);
+//	return true;
+//} catch (Exception e) {
+//	sendMessage("bad input", player);
+//	return false;
+//}
+//	}
 	
 	private void Showdown() {
 		sendMessage("-----------------------------------------------");
@@ -234,7 +324,6 @@ for(Session s : playersList) {
 	public void findCombos(Hand h, int player) {
 		playerScore[player] = 0;
 
-//		System.out.println(h.getHand().size());
 		String retStr = null;
 		int handStrength = 0;
 		
@@ -301,16 +390,19 @@ if(thisScore > playerScore[player]){
 			
 	
 	}
-	public int awaitPlayer(int playerPos) {
-		lastMessage = "";
+	public Map<String, Object> awaitPlayer(int playerPos) {
+		
+		lastMessage.clear();
 		lastSender = null;
 		
 		synchronized (this){
 
 					while(!this.verifyPlayerInput(lastMessage, playerPos)) {
-
+						printIfVerbose("stuck in while loop");
 							try {
 								this.playersList.get(playerPos).getBasicRemote().sendText("(1):Called (2):Fold (3):Raise ");
+
+								printIfVerbose("sleeping in loop");
 								this.wait();
 							} 
 							
@@ -325,45 +417,51 @@ if(thisScore > playerScore[player]){
 		
 		
 
-		return Integer.parseInt(lastMessage);
+		printIfVerbose("loop finished");
+		return lastMessage;
 	}
-	public int awaitPlayerRaise(int playerPos) {
-		lastMessage = "";
-		lastSender = null;
-		
-		synchronized (this){
-
-					while(!this.verifyRaise(lastMessage, playerPos)) {
-
-							try {
-								this.playersList.get(playerPos).getBasicRemote().sendText("Raise how much?");
-								this.wait();
-							} 
-							
-							catch (IOException e) {
-								e.printStackTrace();
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-					
-					}
-			  }
-		
-		
-
-		return Integer.parseInt(lastMessage);
-	}
+//	public int awaitPlayerRaise(int playerPos) {
+//		lastMessage = null;
+//		lastSender = null;
+//		
+//		synchronized (this){
+//
+//					while(!this.verifyRaise(lastMessage, playerPos)) {
+//
+//							try {
+//								this.playersList.get(playerPos).getBasicRemote().sendText("Raise how much?");
+//								this.wait();
+//							} 
+//							
+//							catch (IOException e) {
+//								e.printStackTrace();
+//							} catch (InterruptedException e) {
+//								e.printStackTrace();
+//							}
+//					
+//					}
+//			  }
+//		
+//		
+//
+//		return Integer.parseInt(lastMessage);
+//	}
 	
 	
 	
 
 	public static void updateLastMessage(String message, Session s, Holdem h) {
-		h.lastMessage = message;
+
+		printIfVerbose("updating last message");
+		Map<String, Object> retMap;
+   	 retMap = JSonParser.parseJson(message);
+		h.lastMessage = retMap;
 		h.lastSender = s;
+		
 		     synchronized(h) {
+		    	 printIfVerbose("waking from loop");
 		          h.notify();
 		     }	
-//		}
 
 		
 	}
@@ -513,9 +611,6 @@ return retInt;
 			deck = new Deck();
 			
 			
-			
-			
-			
 //			for(int i = 0; i < playersList.size(); i++) {
 //				
 //				if(playersList.get(i).isOpen() ){
@@ -540,33 +635,33 @@ return retInt;
 			lastBetter = null;
 			while(players[i] != lastBetter ) {
 			
-//				if(i >= players.length)
-//					i = 0;
-//				if(players[i] == null)
-//				continue;
 				
 				
 			if(playersList.get(i).isOpen() ){
-				sendMessage("Round begin ", i);
-//				sendMessage(players[i].toString(), i);
-				sendMessage(Double.toString(getOwed(i)), i);
-//				sendMessage("Table is "+table.toString(), i);
-			int option = awaitPlayer(i);
-//			players[i] = new Hand();
-			
-			if(option == 1) {
-				players[i] = new Hand();
-				playerPayed[i] += getOwed(i);
-			}
-			else if(option == 2) {
-				players[i] = null;
-			}
-			
-			else if(option == 3) {
-				players[i] = new Hand();
-				lastBetter = players[i];
-				playerPayed[i] += awaitPlayerRaise(i);
-			}
+	    		JsonObject jsonObject = new JsonObject();
+	    		jsonObject.addProperty("success", true);
+	    		jsonObject.addProperty("request", "update");
+	    		jsonObject.addProperty("game", "holdem");
+	    		jsonObject.addProperty("activePlayer", Websocket.sessionToName.get(this.playersList.get(i)));
+	    		sendMessage(jsonObject.toString());
+	    		
+				Map<String, Object> option = awaitPlayer(i);
+				printIfVerbose("after loop");
+				
+				if(option.containsKey("action") && option.get("action").equals("call")) {
+					players[i] = new Hand();
+					call(i);
+				}
+				else if(option.containsKey("action") && option.get("action").equals("fold")) {
+					fold(i);
+							}
+				
+				else if(option.containsKey("action")
+						&& option.get("action").equals("raise")
+						&& option.containsKey("raise")) {
+					players[i] = new Hand();
+					raise(i, (String) option.get("raise"));
+				}
 			
 			
 			
@@ -632,21 +727,20 @@ return retInt;
 						winner = i;
 					}
 				}
-				sendMessage("THE WINNER IS PLAYER:" +winner);
+				DBwriter.addBananas(Websocket.sessionToName.get(playersList.get(winner)), ((Double) getPot()).intValue() );
+				
 				for (int i = 0; i < playerScore.length; i++) {
-					if(i == winner)
-					DBwriter.addBananas(Websocket.sessionToName.get(playersList.get(winner)), ((Double) getPot()).intValue() );
-					else
+					if(i != winner)
 						DBwriter.removeBananas(Websocket.sessionToName.get(playersList.get(i)), ((Double) playerPayed[i]).intValue() );
 				}
-				sendMessage("Table = " +table);
-//				sendMessage("Pot is "+getPot());
-//				for (int i = 0; i < players.length; i++) {
-//					if (players[i] != null) {
-//						sendMessage(players[i]+" "+i, i);
-//						
-//					}
-//				}
+				
+
+	    		JsonObject jsonObject = new JsonObject();
+	    		jsonObject.addProperty("success", true);
+	    		jsonObject.addProperty("request", "update");
+	    		jsonObject.addProperty("game", "holdem");
+	    		jsonObject.addProperty("winner", Websocket.sessionToName.get(this.playersList.get(winner)));
+	    		sendMessage(jsonObject.toString());
 		
 		}
 

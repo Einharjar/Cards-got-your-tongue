@@ -34,13 +34,13 @@ public class Websocket {
     	Map<String, Object> retMap = new HashMap<String, Object>();
     	 retMap = JSonParser.parseJson(message);
     	
-    	System.out.println(retMap.toString());
+    	System.out.println("Message recieved: "+message);
     	
     	 if(!retMap.containsKey("request"))
     		 return;
     	 
     	 String requestType = (String) retMap.get("request");
-     	System.out.println(requestType);
+//     	System.out.println(requestType);
     	 
     	if(!sessionToName.containsKey(session)) {
             if(requestType.equals("login")) {
@@ -49,15 +49,15 @@ public class Websocket {
             	if(DBwriter.autenticateUser(username, password)) {
             		JsonObject jsonObject = new JsonObject();
             		jsonObject.addProperty("request", "login");
-            		jsonObject.addProperty("success", false);
+            		jsonObject.addProperty("success", true);
                 	sessionToName.put(session, username);
-                	onServerMessage(jsonObject.getAsString(), session);
+                	onServerMessage(jsonObject.toString(), session);
             	}
             	else {
             		JsonObject jsonObject = new JsonObject();
             		jsonObject.addProperty("request", "login");
             		jsonObject.addProperty("success", false);
-                	onServerMessage(jsonObject.getAsString(), session);
+                	onServerMessage(jsonObject.toString(), session);
             	}
             		
             }
@@ -69,16 +69,13 @@ public class Websocket {
             		
             		
             		DBwriter.writeNewPerson(p);
-            		DBwriter.writeNewUser(u, u.getUserId());
+            		DBwriter.writeNewUser(u.getUserName(), u.getPassword(), u.getUserId(), p.getFirstName(), p.getLastName());
                 	sessionToName.put(session, (String) retMap.get("username"));
 
-                	onServerMessage("Welcome online!", session);
                 	
             	} catch (NullPointerException e) {
-	            	onServerMessage("Missing field", session);
 	            	e.printStackTrace();
 				}catch (Exception e) {
-	            	onServerMessage("unknown error", session);
 	            	e.printStackTrace();
 				}
             }
@@ -90,33 +87,25 @@ public class Websocket {
     	
     	 if(requestType.equals("join")) {
     		 
-    		int uid = ((Double) retMap.get("join")).intValue();
+
+    		 String lobbyNrAsString = (String) retMap.get("join");
+    		 double lobbyNrAsDouble = Double.parseDouble(lobbyNrAsString);
+    		int uid =  ((int) lobbyNrAsDouble);
+
     		
-    		
-      		 if(retMap.get("join") instanceof String) {
-              	userJoinLobby(session, games.get(retMap.get("join")));
-             	onServerMessage("Welcome to the Lobby", session);
-      		 }
-      		 else if(retMap.get("join") instanceof BigDecimal) {
-              	userJoinLobby(session, games.get( ((BigDecimal)retMap.get("join")).intValue()  ));
-             	onServerMessage("Welcome to the Lobby", session);
-             	}
-    		 else if(retMap.get("join") instanceof Double) {
                	userJoinLobby(session, games.get( uid  ));
-             	onServerMessage("Welcome to the Lobby", session);
-             	}
       		 
          }
     	 
     	 if(requestType.equals("game")) {
 //            	String subs = message.substring(10, message.indexOf('"', 10));
-    		 if(retMap.get("game") instanceof String)
-            	sessionToGame.get(session).forwardMessage((String) retMap.get("game"), session);
+//    		 if(retMap.get("game") instanceof String)
+            	sessionToGame.get(session).forwardMessage( message, session);
 
-    		 else if (retMap.get("game") instanceof BigDecimal)
-            	sessionToGame.get(session).forwardMessage( Integer.toString(((BigDecimal)retMap.get("game")).intValue()), session);
-    		 else if(retMap.get("game") instanceof Double)
-             	sessionToGame.get(session).forwardMessage( Integer.toString(((Double)retMap.get("game")).intValue()), session);
+//    		 else if (retMap.get("game") instanceof BigDecimal)
+//            	sessionToGame.get(session).forwardMessage( Integer.toString(((BigDecimal)retMap.get("game")).intValue()), session);
+//    		 else if(retMap.get("game") instanceof Double)
+//             	sessionToGame.get(session).forwardMessage( Integer.toString(((Double)retMap.get("game")).intValue()), session);
 
     	 
     	 }
@@ -125,21 +114,52 @@ public class Websocket {
 
             	        if(retMap.get("string").equals("newlobby")) {
             	        	userRemoveLobby(session);
-            	        	onServerMessage("You've just created a new lobby", session);
-            	        	new Lobby(session, Holdem.class);
+            	        	Lobby newLobby = new Lobby(session, Holdem.class);
+
+            	    		JsonObject jsonObject = new JsonObject();
+            	    		jsonObject.addProperty("request", "newlobby");
+            	    		jsonObject.addProperty("success", true);
+            	    		jsonObject.addProperty("id", newLobby.id);
+            	    		jsonObject.addProperty("name", newLobby.toString());
+            	    		jsonObject.addProperty("host", sessionToName.get(session));
+            	    		jsonObject.addProperty("players", newLobby.players.size());
+            	    		jsonObject.addProperty("playersmax", newLobby.maxPlayers);
+            	         	onServerMessage(jsonObject.toString(), session);
+//            	        	onServerMessage("You've just created a new lobby", session);
         }
         	        else if(retMap.get("string").equals("thislobby")) {
         	        	onServerMessage("\"{\"string\": \""+sessionToGame.get(session)+"\"}\"", session);
         }
         	        else if(retMap.get("string").equals("start")
         	        		&& sessionToGame.get(session).host.equals(session)) {
-        	        	onServerMessage("Game starting", session);
+        	        	System.out.println("Game starting");
+        	    		JsonObject jsonObject = new JsonObject();
+        	    		jsonObject.addProperty("request", "start");
+        	    		jsonObject.addProperty("success", true);
+        	    		for(Session s : sessionToGame.get(session).players) {
+            	        	onServerMessage(jsonObject.toString(), s);
+        	    		}
         				games.remove(sessionToGame.get(session).id);
         				sessionToGame.get(session).start();
         }
         	        else if(retMap.get("string").equals("getlobbies")) {
-        	onServerMessage("{\"string\": \""+games.toString()+"\"}", session);
-        	onServerMessage("{\"string\": \""+games.size()+"\"}", session);
+
+                		JsonObject jsonHeader = new JsonObject();
+                		jsonHeader.addProperty("request", "clearlobbies");
+                		jsonHeader.addProperty("success", true);
+                    	onServerMessage(jsonHeader.toString(), session);
+                    	
+                    		for(Lobby l : games.values()) {
+                        		JsonObject jsonObject = new JsonObject();
+                        		jsonObject.addProperty("request", "newlobby");
+                	    		jsonObject.addProperty("success", true);
+                        		jsonObject.addProperty("id", Integer.toString(l.id));
+                        		jsonObject.addProperty("host", this.sessionToName.get(l.host));
+                        		jsonObject.addProperty("playerscurr", l.players.size());
+                        		jsonObject.addProperty("playersmax", l.maxPlayers);
+                        		jsonObject.addProperty("name", "new texas holdem lobby");
+                            	onServerMessage(jsonObject.toString(), session);
+                    		}
         }
 
         	        }
@@ -147,6 +167,13 @@ public class Websocket {
     }
     public void onClose(Session session) {
     	sessions.remove(session);
+    	if(sessionToGame.containsKey(session)) {
+    		JsonObject jsonHeader = new JsonObject();
+    		jsonHeader.addProperty("request", "lobby");
+    		jsonHeader.addProperty("playerLeft", sessionToName.get(session));
+        	for(Session s: sessionToGame.get(session).players)
+        		onServerMessage(jsonHeader.toString(), s);
+    	}
         System.out.println("onClose");
     }
 
@@ -164,9 +191,14 @@ public class Websocket {
 
     @OnError
     public void onError(Session session, Throwable throwable) {
-        System.out.println("onError");
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!onError!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         throwable.printStackTrace();
     	onServerMessage("error: "+ throwable, session);
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        userRemoveLobby(session);
     }
 
     public void onServerMessage(String message, int user) {
@@ -191,7 +223,7 @@ public class Websocket {
 	public static void newLobby(Lobby lobby) {
 		
 		games.put(lobby.id, lobby);
-	}
+	} 
     public static int firstFreeID() {
     	int i = 0;
     	while(games.containsKey(i)) {
@@ -202,16 +234,33 @@ public class Websocket {
     
     
     public static void userJoinLobby(Session s, Lobby l) {
+    	if(l.players.size()>=l.maxPlayers)
+    		return;
     	if(!sessionToGame.containsKey(s) && l != null && s.isOpen()) {
     		sessionToGame.put(s, l);
     		l.players.add(s);
+
+    		JsonObject jsonObject = new JsonObject();
+    		jsonObject.addProperty("request", "join");
+    		jsonObject.addProperty("success", true);
+    		jsonObject.addProperty("lobby", l.id);
+    		jsonObject.addProperty("id", Integer.toString(l.id));
+    		jsonObject.addProperty("host", sessionToName.get(l.host));
+    		jsonObject.addProperty("playerscurr", l.players.size());
+    		jsonObject.addProperty("playersmax", l.maxPlayers);
+    		jsonObject.addProperty("name", "new texas holdem lobby");
+         	onServerMessage(jsonObject.toString(), s);
     	}
     }
     
     public static void userRemoveLobby(Session s) {
     	if(sessionToGame.containsKey(s)) {
-    		sessionToGame.get(s).players.remove(s);
+    		Lobby playersLobby = sessionToGame.get(s);
+    		playersLobby.players.remove(s);
     		sessionToGame.remove(s);
+    		if(playersLobby.host == s){
+    			games.remove(playersLobby.id);
+    		}
     	}
     }
     
