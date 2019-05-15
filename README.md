@@ -3,7 +3,7 @@ A WIP Online casino test project
 
 ## Requirements
 
-1:DBderby
+1:DBderby (db-derby-10.14.1.0 is what I've personally used)
 
 2:Application Server
 
